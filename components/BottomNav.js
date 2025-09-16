@@ -1,30 +1,66 @@
 import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Home, Plus, List, User } from "lucide-react-native";
 
-const BottomNav = ({ activeScreen, setActiveScreen }) => (
-  <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 px-4 py-2">
-    <div className="flex justify-around">
-      {[
-        { id: "home", icon: Home, label: "Home" },
-        { id: "report", icon: Plus, label: "Report" },
-        { id: "feed", icon: List, label: "Feed" },
-        { id: "my-reports", icon: User, label: "My Reports" },
-      ].map((item) => (
-        <button
-          key={item.id}
-          onClick={() => setActiveScreen(item.id)}
-          className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
-            activeScreen === item.id
-              ? "text-blue-600 bg-blue-50"
-              : "text-gray-600"
-          }`}
-        >
-          <item.icon className="w-5 h-5 mb-1" />
-          <span className="text-xs font-medium">{item.label}</span>
-        </button>
-      ))}
-    </div>
-  </div>
-);
+const BottomNav = ({ activeScreen, setActiveScreen }) => {
+  const navItems = [
+    { id: "home", icon: Home, label: "Home" },
+    { id: "report", icon: Plus, label: "Report" },
+    { id: "feed", icon: List, label: "Feed" },
+    { id: "my-reports", icon: User, label: "My Reports" },
+  ];
+
+  return (
+    <View style={styles.container}>
+      {navItems.map((item) => {
+        const isActive = activeScreen === item.id;
+        const Icon = item.icon;
+
+        return (
+          <TouchableOpacity
+            key={item.id}
+            onPress={() => setActiveScreen(item.id)}
+            style={[styles.button, isActive && styles.activeButton]}
+          >
+            <Icon size={24} color={isActive ? "#2563eb" : "#6b7280"} />
+            <Text style={[styles.label, isActive && styles.activeLabel]}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#e5e7eb",
+    paddingVertical: 8,
+    elevation: 4, // shadow for Android
+  },
+  button: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 8,
+    borderRadius: 12,
+  },
+  activeButton: {
+    backgroundColor: "#eff6ff", // blue-50
+  },
+  label: {
+    fontSize: 12,
+    color: "#6b7280",
+    marginTop: 2,
+    fontWeight: "500",
+  },
+  activeLabel: {
+    color: "#2563eb",
+  },
+});
 
 export default BottomNav;

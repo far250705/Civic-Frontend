@@ -1,23 +1,74 @@
 import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Bell, User } from 'lucide-react-native';
 
-const Header = ({ title, onBack }) => (
-  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-3xl shadow-lg">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-3">
+const Header = ({ title, onBack }) => {
+  return (
+    <View style={styles.container}>
+      <View style={styles.left}>
         {onBack && (
-          <button onClick={onBack} className="p-1">←</button>
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <Text style={styles.backText}>←</Text>
+          </TouchableOpacity>
         )}
-        <h1 className="text-xl font-bold">{title}</h1>
-      </div>
-      <div className="flex items-center space-x-3">
-        <Bell className="w-6 h-6" />
-        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-          <User className="w-5 h-5 text-blue-600" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
+        <Text style={styles.title}>{title}</Text>
+      </View>
+
+      <View style={styles.right}>
+        <Bell size={24} color="white" />
+        <View style={styles.userIcon}>
+          <User size={20} color="#2563eb" />
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#2563eb',
+    padding: 16,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    elevation: 4, // shadow for Android
+    shadowColor: '#000', // shadow for iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  left: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 8,
+    padding: 4,
+  },
+  backText: {
+    color: 'white',
+    fontSize: 18,
+  },
+  title: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  right: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'white',
+    marginLeft: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 export default Header;

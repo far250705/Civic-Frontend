@@ -22,6 +22,8 @@ import { Ionicons } from '@expo/vector-icons';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
 import AnimatedBackground from '../components/AnimatedBackground';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 const LoginScreen = ({ navigation,setIsLoggedIn  }) => {
   const [email, setEmail] = useState('');
@@ -79,15 +81,15 @@ const LoginScreen = ({ navigation,setIsLoggedIn  }) => {
 
       setLoading(false);
 
-      Alert.alert("Success", "Welcome to Clean & Green!", [
-        { text: "OK", onPress: () => console.log("User logged in:", res.data) }
-      ]);
+      const { token, user } = res.data;
 
-      // Optional: Store JWT token
-      await AsyncStorage.setItem("token", res.data.token);
+      // ✅ Store JWT token in AsyncStorage
+      await AsyncStorage.setItem("token", token);
 
-      // Navigate to home/dashboard
-      navigation.navigate("Home");
+      // ✅ Update state to switch screen
+      setIsLoggedIn(true);
+
+      Alert.alert("Success", `Welcome back, ${user.username}!`);
 
     } catch (err) {
       setLoading(false);
