@@ -1,6 +1,14 @@
-import React from "react";
-import { MapPin, Camera, Send } from "lucide-react-native";
-import Header from "../components/Header";
+import React from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Header from '../components/Header';
 
 const ReportScreen = ({
   setActiveScreen,
@@ -13,82 +21,243 @@ const ReportScreen = ({
   reportText,
   setReportText,
   handleSubmitReport,
-}) => (
-  <div className="max-w-md mx-auto bg-white min-h-screen">
-    <Header title="Report Issue" showBack onBack={() => setActiveScreen("home")} />
+}) => {
+  return (
+    <View style={styles.container}>
+      <Header 
+        title="Report Issue" 
+        showBack 
+        onBack={() => setActiveScreen("home")} 
+      />
 
-    <div className="p-4 space-y-6">
-      {/* Location */}
-      <div className="bg-blue-50 rounded-xl p-4">
-        <div className="flex items-center space-x-3 mb-2">
-          <MapPin className="w-5 h-5 text-blue-600" />
-          <span className="font-semibold text-gray-800">Location</span>
-        </div>
-        <p className="text-sm text-gray-600 ml-8">{location}</p>
-      </div>
+      <ScrollView style={styles.content}>
+        {/* Location */}
+        <View style={styles.locationContainer}>
+          <View style={styles.locationHeader}>
+            <Ionicons name="location" size={20} color="#2563EB" />
+            <Text style={styles.locationTitle}>Location</Text>
+          </View>
+          <Text style={styles.locationText}>{location}</Text>
+        </View>
 
-      {/* Category Selection */}
-      <div>
-        <label className="font-semibold text-gray-800 mb-3 block">Select Category *</label>
-        <div className="grid grid-cols-2 gap-3">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`p-3 rounded-xl border-2 transition-all ${
-                selectedCategory === category.id
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              <div className="text-2xl mb-1">{category.icon}</div>
-              <div className="text-sm font-medium text-gray-700">{category.name}</div>
-            </button>
-          ))}
-        </div>
-      </div>
+        {/* Category Selection */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Select Category *</Text>
+          <View style={styles.categoryGrid}>
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                onPress={() => setSelectedCategory(category.id)}
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === category.id 
+                    ? styles.categoryButtonSelected 
+                    : styles.categoryButtonDefault
+                ]}
+              >
+                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                <Text style={styles.categoryName}>{category.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
-      {/* Image Upload */}
-      <div>
-        <label className="font-semibold text-gray-800 mb-3 block">Add Photo</label>
-        <button
-          onClick={handleImageUpload}
-          className={`w-full border-2 border-dashed rounded-xl p-6 transition-all ${
-            imageUploaded ? "border-green-300 bg-green-50" : "border-gray-300 bg-gray-50"
-          }`}
-        >
-          <Camera
-            className={`w-8 h-8 mx-auto mb-2 ${
-              imageUploaded ? "text-green-600" : "text-gray-400"
-            }`}
+        {/* Image Upload */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Add Photo</Text>
+          <TouchableOpacity
+            onPress={handleImageUpload}
+            style={[
+              styles.imageUploadButton,
+              imageUploaded 
+                ? styles.imageUploadButtonSuccess 
+                : styles.imageUploadButtonDefault
+            ]}
+          >
+            <Ionicons 
+              name="camera" 
+              size={32} 
+              color={imageUploaded ? "#16A34A" : "#9CA3AF"} 
+              style={styles.cameraIcon} 
+            />
+            <Text style={[
+              styles.imageUploadText,
+              imageUploaded 
+                ? styles.imageUploadTextSuccess 
+                : styles.imageUploadTextDefault
+            ]}>
+              {imageUploaded ? "✓ Photo uploaded successfully" : "Tap to add photo"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Description */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Description *</Text>
+          <TextInput
+            value={reportText}
+            onChangeText={setReportText}
+            placeholder="Describe the issue in detail..."
+            placeholderTextColor="#9CA3AF"
+            multiline
+            numberOfLines={4}
+            style={styles.textArea}
+            textAlignVertical="top"
           />
-          <p className={`text-sm ${imageUploaded ? "text-green-700" : "text-gray-600"}`}>
-            {imageUploaded ? "✓ Photo uploaded successfully" : "Tap to add photo"}
-          </p>
-        </button>
-      </div>
+        </View>
 
-      {/* Description */}
-      <div>
-        <label className="font-semibold text-gray-800 mb-3 block">Description *</label>
-        <textarea
-          value={reportText}
-          onChange={(e) => setReportText(e.target.value)}
-          placeholder="Describe the issue in detail..."
-          className="w-full border border-gray-300 rounded-xl p-3 h-24 resize-none focus:border-blue-500 focus:outline-none"
-        />
-      </div>
+        {/* Submit Button */}
+        <TouchableOpacity
+          onPress={handleSubmitReport}
+          style={styles.submitButton}
+        >
+          <Ionicons name="send" size={20} color="white" />
+          <Text style={styles.submitButtonText}>Submit Report</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
+  );
+};
 
-      {/* Submit Button */}
-      <button
-        onClick={handleSubmitReport}
-        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-xl font-semibold flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transition-all"
-      >
-        <Send className="w-5 h-5" />
-        <span>Submit Report</span>
-      </button>
-    </div>
-  </div>
-);
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+    maxWidth: 400,
+    alignSelf: 'center',
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  locationContainer: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  locationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
+  locationTitle: {
+    fontWeight: '600',
+    color: '#1F2937',
+    fontSize: 16,
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginLeft: 32,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionLabel: {
+    fontWeight: '600',
+    color: '#1F2937',
+    fontSize: 16,
+    marginBottom: 12,
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  categoryButton: {
+    width: '47%',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 80,
+  },
+  categoryButtonDefault: {
+    borderColor: '#E5E7EB',
+    backgroundColor: 'white',
+  },
+  categoryButtonSelected: {
+    borderColor: '#3B82F6',
+    backgroundColor: '#EFF6FF',
+  },
+  categoryIcon: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  categoryName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    textAlign: 'center',
+  },
+  imageUploadButton: {
+    width: '100%',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageUploadButtonDefault: {
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
+  },
+  imageUploadButtonSuccess: {
+    borderColor: '#BBF7D0',
+    backgroundColor: '#F0FDF4',
+  },
+  cameraIcon: {
+    marginBottom: 8,
+  },
+  imageUploadText: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  imageUploadTextDefault: {
+    color: '#6B7280',
+  },
+  imageUploadTextSuccess: {
+    color: '#166534',
+  },
+  textArea: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    padding: 12,
+    height: 96,
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  submitButton: {
+    flexDirection: 'row',
+    backgroundColor: '#2563EB',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+    marginBottom: 20,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
 
 export default ReportScreen;
