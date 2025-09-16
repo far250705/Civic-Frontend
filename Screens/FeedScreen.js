@@ -1,93 +1,266 @@
-import React from "react";
-import { Search, Filter, Camera, MapPin, Heart, MessageCircle, User } from "lucide-react-native";
-import Header from "../components/Header";
+import React from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Header from '../components/Header';
 
-const FeedScreen = ({ setActiveScreen, mockReports, getStatusColor }) => (
-  <div className="max-w-md mx-auto bg-white min-h-screen">
-    <Header title="Community Feed" showBack onBack={() => setActiveScreen("home")} />
+const FeedScreen = ({ setActiveScreen, mockReports, getStatusColor }) => {
+  return (
+    <View style={styles.container}>
+      <Header 
+        title="Community Feed" 
+        showBack 
+        onBack={() => setActiveScreen("home")} 
+      />
+      
+      {/* Search and Filter */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchRow}>
+          <View style={styles.searchInputContainer}>
+            <Ionicons 
+              name="search" 
+              size={16} 
+              color="#9CA3AF" 
+              style={styles.searchIcon} 
+            />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search issues..."
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+          <TouchableOpacity style={styles.filterButton}>
+            <Ionicons name="filter" size={16} color="#6B7280" />
+          </TouchableOpacity>
+        </View>
+      </View>
 
-    {/* Search and Filter */}
-    <div className="p-4 bg-gray-50 border-b">
-      <div className="flex space-x-2">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search issues..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-          />
-        </div>
-        <button className="p-2 bg-white border border-gray-300 rounded-lg">
-          <Filter className="w-4 h-4 text-gray-600" />
-        </button>
-      </div>
-    </div>
+      {/* Feed Items */}
+      <ScrollView style={styles.feedContainer}>
+        {mockReports.map((report) => (
+          <View key={report.id} style={styles.reportCard}>
+            {/* Header */}
+            <View style={styles.reportHeader}>
+              <View style={styles.userInfo}>
+                <View style={styles.avatar}>
+                  <Ionicons name="person" size={20} color="#3B82F6" />
+                </View>
+                <View>
+                  <Text style={styles.userName}>{report.user}</Text>
+                  <Text style={styles.timeAgo}>{report.timeAgo}</Text>
+                </View>
+              </View>
+              <View style={[styles.statusBadge, getStatusColor(report.status)]}>
+                <Text style={styles.statusText}>{report.status}</Text>
+              </View>
+            </View>
 
-    {/* Feed Items */}
-    <div className="divide-y divide-gray-100">
-      {mockReports.map((report) => (
-        <div key={report.id} className="p-4">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-sm text-gray-800">{report.user}</p>
-                <p className="text-xs text-gray-500">{report.timeAgo}</p>
-              </div>
-            </div>
-            <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                report.status
-              )}`}
-            >
-              {report.status}
-            </span>
-          </div>
+            {/* Category */}
+            <View style={styles.categoryContainer}>
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryText}>{report.category}</Text>
+              </View>
+            </View>
 
-          {/* Category */}
-          <div className="mb-2">
-            <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-              {report.category}
-            </span>
-          </div>
+            {/* Content */}
+            <Text style={styles.description}>{report.description}</Text>
 
-          {/* Content */}
-          <p className="text-gray-800 mb-3 text-sm leading-relaxed">{report.description}</p>
+            {/* Image placeholder */}
+            {report.image && (
+              <View style={styles.imagePlaceholder}>
+                <Ionicons name="camera" size={32} color="#9CA3AF" />
+              </View>
+            )}
 
-          {/* Image placeholder */}
-          {report.image && (
-            <div className="bg-gray-200 rounded-xl h-48 mb-3 flex items-center justify-center">
-              <Camera className="w-8 h-8 text-gray-400" />
-            </div>
-          )}
+            {/* Location */}
+            <View style={styles.locationContainer}>
+              <Ionicons name="location" size={12} color="#6B7280" />
+              <Text style={styles.locationText}>{report.location}</Text>
+            </View>
 
-          {/* Location */}
-          <p className="text-xs text-gray-600 mb-3 flex items-center">
-            <MapPin className="w-3 h-3 mr-1" />
-            {report.location}
-          </p>
+            {/* Actions */}
+            <View style={styles.actionsContainer}>
+              <TouchableOpacity style={styles.actionButton}>
+                <Ionicons name="heart-outline" size={16} color="#6B7280" />
+                <Text style={styles.actionText}>{report.likes}</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.actionButton}>
+                <Ionicons name="chatbubble-outline" size={16} color="#6B7280" />
+                <Text style={styles.actionText}>{report.comments}</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity>
+                <Text style={styles.viewDetailsText}>View Details</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+};
 
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-            <button className="flex items-center space-x-1 text-gray-600 hover:text-red-500">
-              <Heart className="w-4 h-4" />
-              <span className="text-sm">{report.likes}</span>
-            </button>
-            <button className="flex items-center space-x-1 text-gray-600 hover:text-blue-500">
-              <MessageCircle className="w-4 h-4" />
-              <span className="text-sm">{report.comments}</span>
-            </button>
-            <button className="text-blue-600 text-sm font-medium hover:text-blue-700">
-              View Details
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+    maxWidth: 400,
+    alignSelf: 'center',
+  },
+  searchContainer: {
+    padding: 16,
+    backgroundColor: '#F9FAFB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  searchRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  searchInputContainer: {
+    flex: 1,
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 12,
+    zIndex: 1,
+  },
+  searchInput: {
+    flex: 1,
+    paddingLeft: 40,
+    paddingRight: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    backgroundColor: 'white',
+    fontSize: 14,
+  },
+  filterButton: {
+    padding: 8,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  feedContainer: {
+    flex: 1,
+  },
+  reportCard: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  reportHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#DBEAFE',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userName: {
+    fontWeight: '600',
+    fontSize: 14,
+    color: '#1F2937',
+  },
+  timeAgo: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  categoryContainer: {
+    marginBottom: 8,
+  },
+  categoryBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+  },
+  categoryText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  description: {
+    color: '#1F2937',
+    marginBottom: 12,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  imagePlaceholder: {
+    backgroundColor: '#E5E7EB',
+    borderRadius: 12,
+    height: 192,
+    marginBottom: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 4,
+  },
+  locationText: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  actionText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  viewDetailsText: {
+    color: '#3B82F6',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+});
 
 export default FeedScreen;
