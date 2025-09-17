@@ -2,11 +2,11 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Bell, User } from 'lucide-react-native';
 
-const Header = ({ title, onBack }) => {
+const Header = ({ title, onBack, showBack }) => {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        {onBack && (
+        {showBack && onBack && (
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
             <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
@@ -33,8 +33,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    elevation: 4, // shadow for Android
-    shadowColor: '#000', // shadow for iOS
+    elevation: 4,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,

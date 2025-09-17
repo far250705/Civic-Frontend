@@ -48,7 +48,7 @@ const FeedScreen = ({ navigation }) => {
   const toggleLike = async (postId) => {
     try {
       await API.post(`/posts/${postId}/like`);
-      fetchReports(); // refresh after like/unlike
+      fetchReports();
     } catch (err) {
       console.error("❌ Error liking post:", err.message);
     }
@@ -56,12 +56,11 @@ const FeedScreen = ({ navigation }) => {
 
   const addComment = async () => {
     if (!commentText.trim()) return;
-
     try {
       await API.post(`/posts/${selectedPost}/comment`, { text: commentText });
       setCommentText("");
       setCommentModal(false);
-      fetchReports(); // refresh after comment
+      fetchReports();
     } catch (err) {
       console.error("❌ Error adding comment:", err.message);
     }
@@ -70,7 +69,7 @@ const FeedScreen = ({ navigation }) => {
   const openCommentModal = async (postId) => {
     setSelectedPost(postId);
     try {
-      const res = await API.get(`/posts/${postId}`); // fetch single post with comments
+      const res = await API.get(`/posts/${postId}`);
       setCommentsList(res.data.comments || []);
     } catch (err) {
       console.error("❌ Error fetching comments:", err.message);
@@ -88,7 +87,7 @@ const FeedScreen = ({ navigation }) => {
       <Header
         title="Community Feed"
         showBack
-        onBack={() => navigation.navigate("Home")}
+        onBack={() => navigation.goBack()}
       />
 
       {/* Search & Filter */}
@@ -113,7 +112,6 @@ const FeedScreen = ({ navigation }) => {
         </View>
       </View>
 
-      {/* Loading */}
       {loading ? (
         <ActivityIndicator
           size="large"
@@ -121,7 +119,10 @@ const FeedScreen = ({ navigation }) => {
           style={{ marginTop: 20 }}
         />
       ) : (
-        <ScrollView style={styles.feedContainer}>
+        <ScrollView
+          style={styles.feedContainer}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
           {reports.map((report) => (
             <View key={report._id} style={styles.reportCard}>
               {/* Header */}
@@ -131,9 +132,7 @@ const FeedScreen = ({ navigation }) => {
                     <Ionicons name="person" size={20} color="#3B82F6" />
                   </View>
                   <View>
-                    <Text style={styles.userName}>
-                      {report.user?.username}
-                    </Text>
+                    <Text style={styles.userName}>{report.user?.username}</Text>
                     <Text style={styles.timeAgo}>
                       {new Date(report.createdAt).toLocaleDateString()}
                     </Text>
@@ -144,19 +143,8 @@ const FeedScreen = ({ navigation }) => {
                 </View>
               </View>
 
-              {/* Category */}
-              <View style={styles.categoryContainer}>
-                <View style={styles.categoryBadge}>
-                  <Text style={styles.categoryText}>
-                    {report.category || "General"}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Content */}
               <Text style={styles.description}>{report.description}</Text>
 
-              {/* Image */}
               {report.media && report.media.length > 0 && (
                 <View style={styles.imagePlaceholder}>
                   <Ionicons name="camera" size={32} color="#9CA3AF" />
@@ -166,7 +154,6 @@ const FeedScreen = ({ navigation }) => {
                 </View>
               )}
 
-              {/* Location */}
               <View style={styles.locationContainer}>
                 <Ionicons name="location" size={12} color="#6B7280" />
                 <Text style={styles.locationText}>
@@ -174,9 +161,7 @@ const FeedScreen = ({ navigation }) => {
                 </Text>
               </View>
 
-              {/* Actions */}
               <View style={styles.actionsContainer}>
-                {/* Like */}
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => toggleLike(report._id)}
@@ -189,12 +174,15 @@ const FeedScreen = ({ navigation }) => {
                   <Text style={styles.actionText}>{report.likesCount || 0}</Text>
                 </TouchableOpacity>
 
-                {/* Comment */}
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => openCommentModal(report._id)}
                 >
-                  <Ionicons name="chatbubble-outline" size={16} color="#6B7280" />
+                  <Ionicons
+                    name="chatbubble-outline"
+                    size={16}
+                    color="#6B7280"
+                  />
                   <Text style={styles.actionText}>
                     {report.commentsCount || 0}
                   </Text>
@@ -324,21 +312,7 @@ const styles = StyleSheet.create({
   timeAgo: { fontSize: 12, color: "#6B7280" },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   statusText: { fontSize: 12, fontWeight: "500", color: "#1F2937" },
-  categoryContainer: { marginBottom: 8 },
-  categoryBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
-  },
-  categoryText: { fontSize: 12, fontWeight: "500", color: "#374151" },
-  description: {
-    color: "#1F2937",
-    marginBottom: 12,
-    fontSize: 14,
-    lineHeight: 20,
-  },
+  description: { color: "#1F2937", marginBottom: 12, fontSize: 14, lineHeight: 20 },
   imagePlaceholder: {
     backgroundColor: "#E5E7EB",
     borderRadius: 12,
@@ -348,12 +322,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 8,
   },
-  locationContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    gap: 4,
-  },
+  locationContainer: { flexDirection: "row", alignItems: "center", marginBottom: 12, gap: 4 },
   locationText: { fontSize: 12, color: "#6B7280" },
   actionsContainer: {
     flexDirection: "row",
@@ -366,20 +335,13 @@ const styles = StyleSheet.create({
   actionButton: { flexDirection: "row", alignItems: "center", gap: 4 },
   actionText: { fontSize: 14, color: "#6B7280" },
   viewDetailsText: { color: "#3B82F6", fontSize: 14, fontWeight: "500" },
-
-  // Modal
   modalContainer: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
-  modalContent: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 12,
-    width: "90%",
-  },
+  modalContent: { backgroundColor: "white", padding: 20, borderRadius: 12, width: "90%" },
   commentInput: {
     borderWidth: 1,
     borderColor: "#D1D5DB",
@@ -387,18 +349,9 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 12,
   },
-  modalActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 16,
-  },
+  modalActions: { flexDirection: "row", justifyContent: "flex-end", gap: 16 },
   cancelButton: { padding: 8 },
-  postButton: {
-    padding: 8,
-    backgroundColor: "#3B82F6",
-    borderRadius: 8,
-    alignItems: "center",
-  },
+  postButton: { padding: 8, backgroundColor: "#3B82F6", borderRadius: 8, alignItems: "center" },
 });
 
 export default FeedScreen;
