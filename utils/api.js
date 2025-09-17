@@ -1,10 +1,20 @@
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Replace with your backend server URL
 const API = axios.create({
-  baseURL: "https://88e00bdd3749.ngrok-free.app/api/auth", // For Android Emulator
-  // baseURL: "http://localhost:5000/api/auth", // For iOS Simulator
-  // baseURL: "http://<YOUR-IP>:5000/api/auth", // For real device
+  baseURL: "http://172.16.78.68:5000/api", // 👈 adjust if needed
 });
+
+// 🔑 Attach token automatically to every request
+API.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default API;
