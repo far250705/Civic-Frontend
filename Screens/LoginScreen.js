@@ -75,8 +75,10 @@ const LoginScreen = ({ navigation,setIsLoggedIn  }) => {
 
     try {
       const res = await API.post("/login", {
-        email,
-        password,
+        // email,
+        // password,
+        email: "aktamil13@gmail.com",
+    password: "7702535ak2",
       });
 
       setLoading(false);
