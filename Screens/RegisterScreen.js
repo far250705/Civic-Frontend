@@ -83,7 +83,7 @@ const RegisterScreen = ({ navigation }) => {
     if (validateForm()) {
       setLoading(true);
       try {
-        const res = await API.post("/register", {
+        const res = await API.post("auth/register", {
           username: name,
           email,
           password,

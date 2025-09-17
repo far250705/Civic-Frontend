@@ -47,7 +47,7 @@ const MyReportsScreen = ({ navigation }) => {
 
   const getMediaUrl = (path) => {
     if (!path) return null;
-    return `http://172.16.78.68:5000/${path.replace("\\", "/")}`;
+    return `http://192.168.100.2:5000/${path.replace("\\", "/")}`;
   };
 
   return (

@@ -28,8 +28,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#2563eb',
     padding: 16,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
