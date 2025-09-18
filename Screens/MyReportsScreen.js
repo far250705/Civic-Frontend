@@ -7,6 +7,9 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  TouchableOpacity,
+  TextInput,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Header from "../components/Header";
@@ -16,6 +19,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const MyReportsScreen = ({ navigation }) => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingReport, setEditingReport] = useState(null);
+  const [newDescription, setNewDescription] = useState("");
 
   const fetchReports = async () => {
     try {
@@ -47,7 +52,36 @@ const MyReportsScreen = ({ navigation }) => {
 
   const getMediaUrl = (path) => {
     if (!path) return null;
-    return `http://192.168.100.2:5000/${path.replace("\\", "/")}`;
+    return `https://civicapi.onrender.com/${path.replace("\\", "/")}`;
+  };
+
+  const handleEditPost = async () => {
+    if (!editingReport) return;
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return Alert.alert("Unauthorized", "Please log in again");
+
+      const res = await API.put(
+        `posts/${editingReport._id}`,
+        { description: newDescription },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      Alert.alert("Success", res.data.msg);
+      setEditingReport(null);
+      setNewDescription("");
+      fetchReports();
+    } catch (err) {
+      console.error("Edit error:", err.response?.data || err.message);
+      Alert.alert("Error", err.response?.data?.msg || "Failed to edit report");
+    }
+  };
+
+  const canEdit = (createdAt) => {
+    const diffMinutes =
+      (new Date() - new Date(createdAt)) / 1000 / 60;
+    return diffMinutes <= 5;
   };
 
   return (
@@ -101,12 +135,53 @@ const MyReportsScreen = ({ navigation }) => {
                       </Text>
                     </View>
                   </View>
+
+                  {canEdit(report.createdAt) && (
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => {
+                        setEditingReport(report);
+                        setNewDescription(report.description);
+                      }}
+                    >
+                      <Text style={styles.editText}>✏️ Edit</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               ))}
             </View>
           )}
         </ScrollView>
       )}
+
+      {/* Edit Modal */}
+      <Modal visible={!!editingReport} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Report</Text>
+            <TextInput
+              style={styles.input}
+              value={newDescription}
+              onChangeText={setNewDescription}
+              multiline
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setEditingReport(null)}
+              >
+                <Text style={styles.btnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.saveBtn}
+                onPress={handleEditPost}
+              >
+                <Text style={styles.btnText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -154,25 +229,58 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
   },
-  userContainer: {
-    flexDirection: "row",
+  userContainer: { flexDirection: "row", alignItems: "center", gap: 4 },
+  locationContainer: { flexDirection: "row", alignItems: "center", gap: 4 },
+  timeContainer: { flexDirection: "row", alignItems: "center", gap: 4 },
+  footerText: { fontSize: 12, color: "#6B7280" },
+  editButton: {
+    marginTop: 10,
+    alignSelf: "flex-end",
+    backgroundColor: "#2563EB",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  editText: { color: "white", fontSize: 12 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
     alignItems: "center",
-    gap: 4,
   },
-  locationContainer: {
+  modalContent: {
+    backgroundColor: "white",
+    width: "85%",
+    borderRadius: 12,
+    padding: 20,
+  },
+  modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    minHeight: 80,
+    marginBottom: 16,
+  },
+  modalActions: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
+    justifyContent: "flex-end",
+    gap: 10,
   },
-  timeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
+  cancelBtn: {
+    backgroundColor: "#9CA3AF",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
-  footerText: {
-    fontSize: 12,
-    color: "#6B7280",
+  saveBtn: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
+  btnText: { color: "white", fontWeight: "600" },
 });
 
 export default MyReportsScreen;

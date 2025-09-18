@@ -11,15 +11,15 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Image // ← Make sure to import Image
+  Image,
+  RefreshControl
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Header from "../components/Header";
 import API from "../utils/api";
 
 // Add your API base URL here
-const API_BASE_URL = " https://328cba2ecf5e.ngrok-free.app"; // ← REPLACE WITH YOUR ACTUAL IP AND PORT
-// Example: const API_BASE_URL = "http://192.168.1.100:3000";
+const API_BASE_URL = "https://civicapi.onrender.com";
 
 const getStatusStyle = (status) => {
   switch (status) {
@@ -36,78 +36,130 @@ const getStatusStyle = (status) => {
 
 // Time ago function for comments
 const timeAgo = (dateString) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now - date) / 1000);
+  if (!dateString) return "Unknown time";
   
-  if (seconds < 60) return "just now";
-  
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  
-  return date.toLocaleDateString();
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid date";
+    
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return "just now";
+    
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    
+    return date.toLocaleDateString();
+  } catch (error) {
+    console.log("Time ago error:", error);
+    return "Unknown time";
+  }
 };
 
-const CommentItem = ({ comment }) => (
-  <View style={styles.commentItem}>
-    <View style={styles.avatar}>
-      <Ionicons name="person" size={20} color="#3B82F6" />
-    </View>
-    <View style={styles.commentContent}>
-      <View style={styles.commentHeader}>
-        <Text style={styles.commentUsername}>{comment.user?.username || "Anonymous"}</Text>
-        <Text style={styles.commentTime}>{timeAgo(comment.createdAt)}</Text>
+const CommentItem = ({ comment }) => {
+  // Ensure comment exists and has required properties
+  if (!comment) {
+    return null;
+  }
+
+  const username = comment.user?.username || "Anonymous";
+  const commentText = comment.text || "No comment text";
+  const createdAt = comment.createdAt;
+
+  return (
+    <View style={styles.commentItem}>
+      <View style={styles.avatar}>
+        <Ionicons name="person" size={20} color="#3B82F6" />
       </View>
-      <Text style={styles.commentText}>{comment.text}</Text>
-      <View style={styles.commentActions}>
-        <TouchableOpacity style={styles.commentAction}>
-          <Ionicons name="heart-outline" size={14} color="#6B7280" />
-          <Text style={styles.commentActionText}>Like</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.commentAction}>
-          <Text style={styles.commentActionText}>Reply</Text>
-        </TouchableOpacity>
+      <View style={styles.commentContent}>
+        <View style={styles.commentHeader}>
+          <Text style={styles.commentUsername}>{username}</Text>
+          <Text style={styles.commentTime}>{timeAgo(createdAt)}</Text>
+        </View>
+        <Text style={styles.commentText}>{commentText}</Text>
       </View>
     </View>
-  </View>
-);
+  );
+};
 
 const FeedScreen = ({ navigation }) => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [commentModal, setCommentModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [commentText, setCommentText] = useState("");
   const [commentsList, setCommentsList] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [postTitle, setPostTitle] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchReports = async () => {
+  const fetchReports = async (page = 1, isLoadMore = false) => {
     try {
-      const res = await API.get("/posts/paginated");
-      setReports(res.data.posts || []);
+      if (!isLoadMore) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const res = await API.get(`/posts/paginated?page=${page}&limit=10`);
+      const newPosts = res.data.posts || [];
+      
+      if (isLoadMore) {
+        // Append new posts to existing ones
+        setReports(prevReports => [...prevReports, ...newPosts]);
+      } else {
+        // Replace existing posts (for refresh or initial load)
+        setReports(newPosts);
+        setCurrentPage(1);
+      }
+
+      // Check if there are more posts to load
+      setHasMorePosts(newPosts.length === 10); // Assuming 10 is the limit per page
+      
     } catch (err) {
       console.error("❌ Error fetching reports:", err.message);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      setIsRefreshing(false);
     }
+  };
+
+  const loadMorePosts = async () => {
+    if (loadingMore || !hasMorePosts) return;
+    
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    await fetchReports(nextPage, true);
+  };
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    setCurrentPage(1);
+    setHasMorePosts(true);
+    await fetchReports(1, false);
   };
 
   const searchPosts = async () => {
     if (!searchQuery.trim()) {
-      fetchReports();
+      await onRefresh();
       return;
     }
     setLoading(true);
     try {
       const res = await API.get(`/posts/search?q=${encodeURIComponent(searchQuery)}`);
       setReports(res.data.posts || []);
+      setHasMorePosts(false); // Disable infinite scroll for search results
     } catch (err) {
       console.error("❌ Error searching posts:", err.message);
       setReports([]);
@@ -118,13 +170,26 @@ const FeedScreen = ({ navigation }) => {
 
   const clearSearch = () => {
     setSearchQuery("");
-    fetchReports();
+    onRefresh();
   };
 
   const toggleLike = async (postId) => {
     try {
       await API.post(`/posts/${postId}/like`);
-      fetchReports();
+      // Update the specific post in the current list instead of refetching all
+      setReports(prevReports => 
+        prevReports.map(report => 
+          report._id === postId 
+            ? { 
+                ...report, 
+                isLikedByUser: !report.isLikedByUser,
+                likesCount: report.isLikedByUser 
+                  ? (report.likesCount || 1) - 1 
+                  : (report.likesCount || 0) + 1
+              }
+            : report
+        )
+      );
     } catch (err) {
       console.error("❌ Error liking post:", err.message);
     }
@@ -132,33 +197,46 @@ const FeedScreen = ({ navigation }) => {
 
   const addComment = async () => {
     if (!commentText.trim()) return;
+    if (!selectedPost) return;
+    
     try {
-      await API.post(`/posts/${selectedPost}/comment`, { text: commentText });
+      const response = await API.post(`/posts/${selectedPost}/comment`, { 
+        text: commentText.trim() 
+      });
+      
       setCommentText("");
       
       // Refresh comments after adding a new one
       const res = await API.get(`/posts/${selectedPost}`);
-      setCommentsList(res.data.comments || []);
+      const comments = res.data.comments || [];
+      setCommentsList(comments);
+      
     } catch (err) {
       console.error("❌ Error adding comment:", err.message);
     }
   };
 
   const openCommentModal = async (postId, title) => {
+    if (!postId) return;
+    
     setSelectedPost(postId);
     setPostTitle(title || "Comments");
+    setCommentsList([]); // Clear previous comments
+    
     try {
       const res = await API.get(`/posts/${postId}`);
-      setCommentsList(res.data.comments || []);
+      const comments = res.data.comments || [];
+      setCommentsList(comments);
     } catch (err) {
       console.error("❌ Error fetching comments:", err.message);
+      setCommentsList([]);
     } finally {
       setCommentModal(true);
     }
   };
 
   useEffect(() => {
-    fetchReports();
+    fetchReports(1, false);
   }, []);
 
   return (
@@ -204,6 +282,24 @@ const FeedScreen = ({ navigation }) => {
         <ScrollView
           style={styles.feedContainer}
           contentContainerStyle={{ paddingBottom: 20 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+              colors={['#3B82F6']}
+              tintColor="#3B82F6"
+            />
+          }
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const isCloseToBottom = 
+              layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+            
+            if (isCloseToBottom && !loadingMore && hasMorePosts && !searchQuery) {
+              loadMorePosts();
+            }
+          }}
+          scrollEventThrottle={16}
         >
           {reports.length === 0 ? (
             <Text style={{ textAlign: "center", marginTop: 20, color: "#6B7280" }}>
@@ -219,9 +315,11 @@ const FeedScreen = ({ navigation }) => {
                       <Ionicons name="person" size={20} color="#3B82F6" />
                     </View>
                     <View>
-                      <Text style={styles.userName}>{report.user?.username || "Anonymous"}</Text>
+                      <Text style={styles.userName}>
+                        {report.user?.username || "Anonymous"}
+                      </Text>
                       <Text style={styles.timeAgo}>
-                        {new Date(report.createdAt).toLocaleDateString()}
+                        {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : "Unknown date"}
                       </Text>
                     </View>
                   </View>
@@ -231,37 +329,40 @@ const FeedScreen = ({ navigation }) => {
                 </View>
 
                 {report.title && (
-  <Text style={styles.postTitle}>{report.title}</Text>
-)}
+                  <Text style={styles.postTitle}>{report.title}</Text>
+                )}
 
-<Text style={styles.description}>{report.description || "No description"}</Text>
-{/* Updated Image Display - Use API call URL */}
-{report.media && report.media.length > 0 && (
-  <View style={styles.imageContainer}>
-    <Image
-      source={{
-        uri: `https://328cba2ecf5e.ngrok-free.app/${report.media[0]
-          .split("/")
-          .pop()}`, // ensures only filename is used
-      }}
-      style={styles.reportImage}
-      resizeMode="cover"
-      onError={(error) => console.log("Image loading error:", error.nativeEvent)}
-    />
-  </View>
-)}
+                <Text style={styles.description}>
+                  {report.description || "No description"}
+                </Text>
 
+                {/* Updated Image Display - Use API call URL */}
+                {report.media && report.media.length > 0 && (
+                  <View style={styles.imageContainer}>
+                    <Image
+                      source={{
+                        uri: `${API_BASE_URL}/${report.media[0]
+                          .split("/")
+                          .pop()}`,
+                      }}
+                      style={styles.reportImage}
+                      resizeMode="cover"
+                      onError={(error) => console.log("Image loading error:", error.nativeEvent)}
+                    />
+                  </View>
+                )}
 
-{/* Updated Location Display - Shows coordinates properly */}
-<View style={styles.locationContainer}>
-  <Ionicons name="location" size={12} color="#6B7280" />
-  <Text style={styles.locationText}>
-    {report.location?.coordinates ? 
-      `Lat: ${report.location.coordinates[1]?.toFixed(4)}, Lng: ${report.location.coordinates[0]?.toFixed(4)}` 
-      : "No location"
-    }
-  </Text>
-</View>
+                {/* Updated Location Display - Shows coordinates properly */}
+                <View style={styles.locationContainer}>
+                  <Ionicons name="location" size={12} color="#6B7280" />
+                  <Text style={styles.locationText}>
+                    {report.location?.coordinates ? 
+                      `Lat: ${report.location.coordinates[1]?.toFixed(4)}, Lng: ${report.location.coordinates[0]?.toFixed(4)}` 
+                      : "No location"
+                    }
+                  </Text>
+                </View>
+
                 <View style={styles.actionsContainer}>
                   <TouchableOpacity
                     style={styles.actionButton}
@@ -298,6 +399,21 @@ const FeedScreen = ({ navigation }) => {
               </View>
             ))
           )}
+          
+          {/* Loading More Indicator */}
+          {loadingMore && (
+            <View style={styles.loadingMoreContainer}>
+              <ActivityIndicator size="small" color="#3B82F6" />
+              <Text style={styles.loadingMoreText}>Loading more posts...</Text>
+            </View>
+          )}
+          
+          {/* No More Posts Indicator */}
+          {!hasMorePosts && reports.length > 0 && !searchQuery && (
+            <View style={styles.noMorePostsContainer}>
+              <Text style={styles.noMorePostsText}>You've reached the end!</Text>
+            </View>
+          )}
         </ScrollView>
       )}
 
@@ -312,16 +428,17 @@ const FeedScreen = ({ navigation }) => {
             >
               <Ionicons name="arrow-back" size={24} color="#000" />
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>{postTitle}</Text>
-            <View style={{ width: 24 }} /> {/* Spacer for balance */}
+            <Text style={styles.modalTitle}>{postTitle || "Comments"}</Text>
+            <View style={{ width: 24 }} />
           </View>
 
           {/* Comments List */}
           <FlatList
             data={commentsList}
-            keyExtractor={(item) => item._id}
+            keyExtractor={(item, index) => item._id || `comment-${index}`}
             renderItem={({ item }) => <CommentItem comment={item} />}
             contentContainerStyle={styles.commentsList}
+            showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyComments}>
                 <Ionicons name="chatbubble-outline" size={48} color="#E5E7EB" />
@@ -429,7 +546,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  // Updated image styles
   imageContainer: {
     marginBottom: 12,
     borderRadius: 12,
@@ -459,7 +575,7 @@ const styles = StyleSheet.create({
   actionText: { fontSize: 14, color: "#6B7280" },
   viewDetailsText: { color: "#3B82F6", fontSize: 14, fontWeight: "500" },
   
-  // New comment modal styles
+  // Comment modal styles
   modalContainer: {
     flex: 1,
     backgroundColor: "white",
@@ -482,7 +598,7 @@ const styles = StyleSheet.create({
   },
   commentsList: {
     padding: 16,
-    paddingBottom: 80, // Space for input
+    paddingBottom: 80,
   },
   commentItem: {
     flexDirection: "row",
@@ -513,19 +629,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 8,
   },
-  commentActions: {
-    flexDirection: "row",
-  },
-  commentAction: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  commentActionText: {
-    fontSize: 12,
-    color: "#6B7280",
-    marginLeft: 4,
-  },
+
   emptyComments: {
     alignItems: "center",
     justifyContent: "center",
@@ -581,6 +685,28 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "600",
     fontSize: 14,
+  },
+  
+  // Infinite scroll styles
+  loadingMoreContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  loadingMoreText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#6B7280",
+  },
+  noMorePostsContainer: {
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  noMorePostsText: {
+    fontSize: 14,
+    color: "#9CA3AF",
+    fontStyle: "italic",
   },
 });
 

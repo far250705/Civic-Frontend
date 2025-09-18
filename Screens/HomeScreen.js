@@ -1,10 +1,40 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { Plus, List, User, MapPin } from "lucide-react-native";
 import Header from "../components/Header";
+import API from "../utils/api"; // ✅ use your axios instance
 
 const HomeScreen = ({ setActiveScreen }) => {
-  // Sample mock reports
+  const [stats, setStats] = useState({
+    totalReports: 0,
+    resolved: 0,
+    inProgress: 0,
+    pending: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Fetch stats from backend API
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await API.get("/posts/stats"); // 👈 correct API call
+        setStats(res.data);
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   const mockReports = [
     {
       id: "1",
@@ -29,7 +59,6 @@ const HomeScreen = ({ setActiveScreen }) => {
     },
   ];
 
-  // Function to assign colors based on status
   const getStatusColor = (status) => {
     switch (status) {
       case "Resolved":
@@ -49,64 +78,78 @@ const HomeScreen = ({ setActiveScreen }) => {
 
       {/* Quick Stats */}
       <View style={{ padding: 16, backgroundColor: "#f0f7ff" }}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
+        {loading ? (
+          <ActivityIndicator size="large" color="#2563eb" />
+        ) : (
           <View
             style={{
-              flex: 1,
-              marginHorizontal: 4,
-              backgroundColor: "white",
-              borderRadius: 12,
-              padding: 12,
-              alignItems: "center",
-              elevation: 2,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 20,
             }}
           >
-            <Text style={{ fontSize: 20, fontWeight: "bold", color: "#2563eb" }}>
-              247
-            </Text>
-            <Text style={{ fontSize: 12, color: "#4b5563" }}>Total Reports</Text>
-          </View>
+            <View
+              style={{
+                flex: 1,
+                marginHorizontal: 4,
+                backgroundColor: "white",
+                borderRadius: 12,
+                padding: 12,
+                alignItems: "center",
+                elevation: 2,
+              }}
+            >
+              <Text
+                style={{ fontSize: 20, fontWeight: "bold", color: "#2563eb" }}
+              >
+                {stats.totalReports}
+              </Text>
+              <Text style={{ fontSize: 12, color: "#4b5563" }}>
+                Total Reports
+              </Text>
+            </View>
 
-          <View
-            style={{
-              flex: 1,
-              marginHorizontal: 4,
-              backgroundColor: "white",
-              borderRadius: 12,
-              padding: 12,
-              alignItems: "center",
-              elevation: 2,
-            }}
-          >
-            <Text style={{ fontSize: 20, fontWeight: "bold", color: "#16a34a" }}>
-              189
-            </Text>
-            <Text style={{ fontSize: 12, color: "#4b5563" }}>Resolved</Text>
-          </View>
+            <View
+              style={{
+                flex: 1,
+                marginHorizontal: 4,
+                backgroundColor: "white",
+                borderRadius: 12,
+                padding: 12,
+                alignItems: "center",
+                elevation: 2,
+              }}
+            >
+              <Text
+                style={{ fontSize: 20, fontWeight: "bold", color: "#16a34a" }}
+              >
+                {stats.resolved}
+              </Text>
+              <Text style={{ fontSize: 12, color: "#4b5563" }}>Resolved</Text>
+            </View>
 
-          <View
-            style={{
-              flex: 1,
-              marginHorizontal: 4,
-              backgroundColor: "white",
-              borderRadius: 12,
-              padding: 12,
-              alignItems: "center",
-              elevation: 2,
-            }}
-          >
-            <Text style={{ fontSize: 20, fontWeight: "bold", color: "#f97316" }}>
-              58
-            </Text>
-            <Text style={{ fontSize: 12, color: "#4b5563" }}>In Progress</Text>
+            <View
+              style={{
+                flex: 1,
+                marginHorizontal: 4,
+                backgroundColor: "white",
+                borderRadius: 12,
+                padding: 12,
+                alignItems: "center",
+                elevation: 2,
+              }}
+            >
+              <Text
+                style={{ fontSize: 20, fontWeight: "bold", color: "#f97316" }}
+              >
+                {stats.inProgress}
+              </Text>
+              <Text style={{ fontSize: 12, color: "#4b5563" }}>
+                In Progress
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Quick Actions */}
         <TouchableOpacity

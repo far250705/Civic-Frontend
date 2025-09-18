@@ -10,6 +10,7 @@ import {
   Alert,
   Image,
   Animated,
+  ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -227,7 +228,7 @@ const ReportScreen = ({ navigation, setActiveScreen }) => {
                     : styles.categoryButtonDefault,
                 ]}
               >
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                <Text ssutyle={styles.categoryIcon}>{category.icon}</Text>
                 <Text style={styles.categoryName}>{category.name}</Text>
               </TouchableOpacity>
             ))}
