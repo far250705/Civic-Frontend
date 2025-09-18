@@ -23,7 +23,7 @@ import * as ImagePicker from 'expo-image-picker';
 const { width, height } = Dimensions.get('window');
 
 // API Configuration - use your actual API base URL
-const API_BASE_URL = 'https://a5f6803ff6ce.ngrok-free.app/api';
+const API_BASE_URL = 'https://civicapi.onrender.com/api';
 
 const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
   const navigation = useNavigation();

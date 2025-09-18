@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API = axios.create({
-  baseURL: "https://a5f6803ff6ce.ngrok-free.app/api", // 👈 adjust if needed
+  baseURL: "https://civicapi.onrender.com/api", // 👈 adjust if needed
 });
 
 // 🔑 Attach token automatically to every request
