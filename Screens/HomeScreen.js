@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Plus, List, User, MapPin } from "lucide-react-native";
 import Header from "../components/Header";
-import API from "../utils/api"; // ✅ use your axios instance
+import API from "../utils/api"; // ✅ your axios instance
 
 const HomeScreen = ({ setActiveScreen }) => {
   const [stats, setStats] = useState({
@@ -19,11 +19,11 @@ const HomeScreen = ({ setActiveScreen }) => {
   });
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch stats from backend API
+  // Fetch stats from backend API
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await API.get("/posts/stats"); // 👈 correct API call
+        const res = await API.get("/posts/stats"); // 👈 backend API
         setStats(res.data);
       } catch (err) {
         console.error("Error fetching stats:", err);
@@ -74,7 +74,8 @@ const HomeScreen = ({ setActiveScreen }) => {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#f9fafb" }}>
-      <Header title="Civic Reporter" />
+      {/* ✅ Header with profile button */}
+      <Header title="Civic Reporter" onProfilePress={() => setActiveScreen("profile")} />
 
       {/* Quick Stats */}
       <View style={{ padding: 16, backgroundColor: "#f0f7ff" }}>

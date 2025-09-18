@@ -1,3 +1,4 @@
+
 // components/AnimatedBackground.js
 import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
@@ -30,7 +31,7 @@ const AnimatedBackground = ({ children }) => {
 
   return (
     <AnimatedLinearGradient
-      colors={['#E8F5E8', '#F1F8E9', '#C8E6C9', '#E8F5E8']}
+      colors={['#EFF6FF', '#DBEAFE', '#BFDBFE', '#EFF6FF']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={[styles.gradient, animatedStyle]}

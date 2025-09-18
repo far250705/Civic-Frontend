@@ -1,13 +1,22 @@
+// Header.js
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Bell, User } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 
-const Header = ({ title, onBack, showBack }) => {
+const Header = ({ title, showBack = false, onBack }) => {
+  const navigation = useNavigation();
+
+  // Navigate to ProfileScreen when profile icon is pressed
+  const handleProfilePress = () => {
+    navigation.navigate('Profile'); // Make sure "Profile" is registered in your stack
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.left}>
         {showBack && onBack && (
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <TouchableOpacity style={styles.backButton} onPress={onBack}>
             <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
         )}
@@ -16,9 +25,9 @@ const Header = ({ title, onBack, showBack }) => {
 
       <View style={styles.right}>
         <Bell size={24} color="white" />
-        <View style={styles.userIcon}>
+        <TouchableOpacity style={styles.userIcon} onPress={handleProfilePress}>
           <User size={20} color="#2563eb" />
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -57,6 +66,7 @@ const styles = StyleSheet.create({
   right: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
   userIcon: {
     width: 32,

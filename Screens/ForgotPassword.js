@@ -1,3 +1,4 @@
+
 // screens/ForgotPasswordScreen.js
 import React, { useState, useEffect } from 'react';
 import {
@@ -104,14 +105,14 @@ const ForgotPasswordScreen = ({ navigation }) => {
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
-              <Ionicons name="arrow-back" size={24} color="#4CAF50" />
+              <Ionicons name="arrow-back" size={24} color="#2563eb" />
             </TouchableOpacity>
           </Animated.View>
 
           {/* Header */}
           <Animated.View style={[styles.header, headerStyle]}>
             <View style={styles.logoContainer}>
-              <Ionicons name="key" size={48} color="#4CAF50" />
+              <Ionicons name="key" size={48} color="#2563eb" />
             </View>
             <Text style={styles.title}>Reset Your Password</Text>
             <Text style={styles.subtitle}>
@@ -165,10 +166,10 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
         {/* Floating Leaves */}
         <Animated.View style={styles.floatingLeaf1}>
-          <Ionicons name="leaf" size={22} color="#81C784" />
+          <Ionicons name="leaf" size={22} color="#60a5fa" />
         </Animated.View>
         <Animated.View style={styles.floatingLeaf2}>
-          <Ionicons name="leaf" size={18} color="#C8E6C9" />
+          <Ionicons name="leaf" size={18} color="#93c5fd" />
         </Animated.View>
       </AnimatedBackground>
     </KeyboardAvoidingView>
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 10,
-    shadowColor: '#4CAF50',
+    shadowColor: '#2563eb',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -198,16 +199,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
-    shadowColor: '#4CAF50',
+    shadowColor: '#2563eb',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
   },
-  title: { fontSize: 26, fontWeight: 'bold', color: '#2E7D32', marginBottom: 8 },
+  title: { fontSize: 26, fontWeight: 'bold', color: '#1e40af', marginBottom: 8 },
   subtitle: {
     fontSize: 16,
-    color: '#66BB6A',
+    color: '#3b82f6',
     textAlign: 'center',
     lineHeight: 22,
     paddingHorizontal: 20,
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
   form: { marginBottom: 30 },
   resetButton: { marginTop: 20 },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-  footerText: { color: '#81C784', fontSize: 16 },
+  footerText: { color: '#60a5fa', fontSize: 16 },
   loginLinkText: { fontWeight: 'bold', fontSize: 16 },
   floatingLeaf1: {
     position: 'absolute',

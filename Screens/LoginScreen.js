@@ -1,3 +1,4 @@
+
 // screens/LoginScreen.js
 import API from "../utils/api";
 import React, { useState, useEffect } from 'react';
@@ -21,11 +22,10 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
-import AnimatedBackground from '../components/AnimatedBackground';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import AnimatedBackground from '../components/AnimatedBackground';
 
-
-const LoginScreen = ({ navigation,setIsLoggedIn  }) => {
+const LoginScreen = ({ navigation, setIsLoggedIn }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -69,48 +69,48 @@ const LoginScreen = ({ navigation,setIsLoggedIn  }) => {
     return Object.keys(newErrors).length === 0;
   };
 
- const handleLogin = async () => {
-  if (validateForm()) {
-    setLoading(true);
+  const handleLogin = async () => {
+    if (validateForm()) {
+      setLoading(true);
 
-    try {
-      const res = await API.post("auth/login", {
-        email,
-        password,
-      });
+      try {
+        const res = await API.post("auth/login", {
+          email,
+          password,
+        });
 
-      setLoading(false);
+        setLoading(false);
 
-      const { token, user } = res.data;
+        const { token, user } = res.data;
 
-      // ✅ Store JWT token in AsyncStorage
-      await AsyncStorage.setItem("token", token);
+        // ✅ Store JWT token in AsyncStorage
+        await AsyncStorage.setItem("token", token);
 
-      // ✅ Update state to switch screen
-      setIsLoggedIn(true);
+        // ✅ Update state to switch screen
+        setIsLoggedIn(true);
 
-      Alert.alert("Success", `Welcome back, ${user.username}!`);
+Alert.alert("Success", `Welcome back, ${user.username}!`);
 
-    } catch (err) {
-      setLoading(false);
-      Alert.alert(
-        "Login Failed",
-        err.response?.data?.msg || "Something went wrong"
-      );
+
+      } catch (err) {
+        setLoading(false);
+        Alert.alert(
+          "Login Failed",
+          err.response?.data?.msg || "Something went wrong"
+        );
+      }
     }
-  }
-};
+  };
 
-
-  const logoStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: logoAnim.value },
-        { rotate: `${leafRotate.value}deg` },
-      ],
-      opacity: logoAnim.value,
-    };
-  });
+const logoStyle = useAnimatedStyle(() => {
+  return {
+    transform: [
+      { scale: logoAnim.value },
+      { rotate: `${leafRotate.value}deg` }, // ✅ wrap in backticks
+    ],
+    opacity: logoAnim.value,
+  };
+});
 
   const titleStyle = useAnimatedStyle(() => {
     return {
@@ -135,31 +135,30 @@ const LoginScreen = ({ navigation,setIsLoggedIn  }) => {
   });
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <AnimatedBackground>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {/* Animated Header */}
-          <View style={styles.header}>
-            <Animated.View style={[styles.logoContainer, logoStyle]}>
-              <Ionicons name="leaf" size={50} color="#4CAF50" />
-            </Animated.View>
-            
-            <Animated.View style={titleStyle}>
-              <Text style={styles.title}>Clean & Green</Text>
-              <Text style={styles.subtitle}>
-                🌱 Report. Act. Transform. 🌍
-              </Text>
-              <Text style={styles.description}>
-                Welcome back, eco-warrior! Let's make our communities cleaner together.
-              </Text>
-            </Animated.View>
-          </View>
+    <AnimatedBackground>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Clean & Green</Text>
+      </View>
 
-          {/* Animated Form */}
-          <Animated.View style={[styles.form, formStyle]}>
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContainer}>
+          {/* Logo Card */}
+          <Animated.View style={[styles.logoCard, logoStyle]}>
+            <Ionicons name="leaf" size={50} color="#2563eb" />
+          </Animated.View>
+          
+          {/* Welcome Text */}
+          <Animated.View style={[styles.welcomeContainer, titleStyle]}>
+            <Text style={styles.title}>Welcome Back!</Text>
+            <Text style={styles.subtitle}>Sign in to continue reporting issues</Text>
+          </Animated.View>
+
+          {/* Form Card */}
+          <Animated.View style={[styles.formCard, formStyle]}>
             <CustomInput
               label="Email Address"
               value={email}
@@ -202,7 +201,7 @@ const LoginScreen = ({ navigation,setIsLoggedIn  }) => {
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>New to our green community? </Text>
+            <Text style={styles.footerText}>New to our community? </Text>
             <CustomButton
               title="Join the Movement"
               onPress={() => navigation.navigate('Register')}
@@ -212,64 +211,83 @@ const LoginScreen = ({ navigation,setIsLoggedIn  }) => {
             />
           </View>
         </ScrollView>
-      </AnimatedBackground>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </AnimatedBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  header: {
+    backgroundColor: '#2563eb',
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  keyboardContainer: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 24,
+    padding: 20,
+    paddingTop: 40,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  logoContainer: {
+  logoCard: {
+    alignSelf: 'center',
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
-    shadowColor: '#4CAF50',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    marginBottom: 30,
+    elevation: 5,
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+  welcomeContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: '#1f2937',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 18,
-    color: '#4CAF50',
-    textAlign: 'center',
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  description: {
     fontSize: 16,
-    color: '#66BB6A',
+    color: '#4b5563',
     textAlign: 'center',
-    lineHeight: 24,
-    paddingHorizontal: 20,
+    lineHeight: 22,
   },
-  form: {
-    marginBottom: 30,
+  formCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
   },
   loginButton: {
     marginTop: 24,
@@ -286,9 +304,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexWrap: 'wrap',
+    paddingHorizontal: 20,
   },
   footerText: {
-    color: '#66BB6A',
+    color: '#4b5563',
     fontSize: 16,
     marginBottom: 8,
   },

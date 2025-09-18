@@ -1,3 +1,4 @@
+
 // components/CustomInput.js
 import React, { useState, useEffect } from 'react';
 import {
@@ -85,7 +86,7 @@ const CustomInput = ({
       color: interpolate(
         focusAnim.value,
         [0, 1],
-        [0x66BB6A, 0x1B5E20],
+        [0x3b82f6, 0x1e40af],
         Extrapolate.CLAMP
       ),
       backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -102,7 +103,7 @@ const CustomInput = ({
         : interpolate(
             glowAnim.value,
             [0, 1],
-            [0x81C784, 0x2E7D32],
+            [0x60a5fa, 0x2563eb],
             Extrapolate.CLAMP
           ),
       shadowOpacity: interpolate(
@@ -162,7 +163,7 @@ const CustomInput = ({
           <Ionicons
             name={icon}
             size={20}
-            color={isFocused ? '#2E7D32' : error ? '#F44336' : '#81C784'}
+            color={isFocused ? '#2563eb' : error ? '#F44336' : '#60a5fa'}
             style={styles.icon}
           />
         </Animated.View>
@@ -175,15 +176,14 @@ const CustomInput = ({
           style={styles.input}
           value={value}
           onChangeText={onChangeText}
-          
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={isFocused ? '' : placeholder}
-          placeholderTextColor="#C8E6C9"
+          placeholderTextColor="#93c5fd"
           secureTextEntry={secureTextEntry && !isPasswordVisible}
           keyboardType={keyboardType}
-          underlineColorAndroid="transparent"   // 🚀 removes default underline/focus
-  selectionColor="#2E7D32"
+          underlineColorAndroid="transparent"
+          selectionColor="#2563eb"
           {...props}
         />
         
@@ -195,7 +195,7 @@ const CustomInput = ({
             <Ionicons
               name={isPasswordVisible ? 'eye' : 'eye-off'}
               size={20}
-              color="#81C784"
+              color="#60a5fa"
             />
           </TouchableOpacity>
         )}
@@ -218,12 +218,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#81C784',
+    borderColor: '#60a5fa',
     borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     paddingHorizontal: 15,
     height: 60,
-    shadowColor: '#4CAF50',
+    shadowColor: '#3b82f6',
     shadowOffset: {
       width: 0,
       height: 4,
@@ -238,13 +238,13 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#1B5E20',
+    color: '#1e40af',
     paddingTop: 10,
     fontWeight: 'bold',
     outlineStyle: 'none', // for web
-  borderWidth: 0,       // for Android
-  includeFontPadding: false, 
-  textAlignVertical: 'center',
+    borderWidth: 0,       // for Android
+    includeFontPadding: false, 
+    textAlignVertical: 'center',
   },
   eyeIcon: {
     padding: 8,

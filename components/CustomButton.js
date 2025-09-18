@@ -1,3 +1,4 @@
+
 // components/CustomButton.js
 import React from 'react';
 import {
@@ -12,6 +13,7 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
+
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -47,14 +49,14 @@ const CustomButton = ({
     }
   };
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: scaleAnim.value },
-        { rotate: `${rotateAnim.value}deg` },
-      ],
-    };
-  });
+const animatedStyle = useAnimatedStyle(() => {
+  return {
+    transform: [
+      { scale: scaleAnim.value },
+      { rotate: `${rotateAnim.value}deg` }, // ✅ correct
+    ],
+  };
+});
 
   if (variant === 'primary') {
     return (
@@ -66,7 +68,7 @@ const CustomButton = ({
           disabled={loading}
         >
           <LinearGradient
-            colors={['#2E7D32', '#388E3C', '#4CAF50']}
+            colors={['#1e40af', '#2563eb', '#3b82f6']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.primaryButton}
@@ -100,7 +102,7 @@ const CustomButton = ({
           <Ionicons 
             name={icon} 
             size={18} 
-            color="#2E7D32" 
+            color="#2563eb" 
             style={styles.buttonIcon} 
           />
         )}
@@ -120,7 +122,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#2E7D32',
+    shadowColor: '#2563eb',
     shadowOffset: {
       width: 0,
       height: 8,
@@ -145,13 +147,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+    backgroundColor: 'rgba(37, 99, 235, 0.1)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#2E7D32',
+    borderColor: '#2563eb',
   },
   secondaryButtonText: {
-    color: '#2E7D32',
+    color: '#2563eb',
     fontSize: 16,
     fontWeight: '700',
   },

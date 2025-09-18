@@ -19,7 +19,7 @@ import Header from "../components/Header";
 import API from "../utils/api";
 
 // Add your API base URL here
-const API_BASE_URL = "https://civicapi.onrender.com";
+const API_BASE_URL = "https://civicapi.onrender.com/uploads";
 
 const getStatusStyle = (status) => {
   switch (status) {

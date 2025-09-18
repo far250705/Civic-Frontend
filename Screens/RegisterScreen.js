@@ -1,3 +1,5 @@
+
+
 // screens/RegisterScreen.js
 import API from "../utils/api";
 import React, { useState, useEffect } from 'react';
@@ -140,18 +142,18 @@ const RegisterScreen = ({ navigation }) => {
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
-              <Ionicons name="arrow-back" size={24} color="#4CAF50" />
+              <Ionicons name="arrow-back" size={24} color="#3b82f6" />
             </TouchableOpacity>
           </Animated.View>
 
           {/* Header */}
           <Animated.View style={[styles.header, headerStyle]}>
             <View style={styles.logoContainer}>
-              <Ionicons name="person-add" size={50} color="#4CAF50" />
+              <Ionicons name="person-add" size={50} color="#3b82f6" />
             </View>
-            <Text style={styles.title}>Join the Green Revolution</Text>
+            <Text style={styles.title}>Join the Movement</Text>
             <Text style={styles.subtitle}>
-              🌍 Every report counts. Every action matters. 🌱
+              🌍 Every report counts. Every action matters. 🔵
             </Text>
           </Animated.View>
 
@@ -243,18 +245,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
-    shadowColor: '#4CAF50',
+    shadowColor: '#3b82f6',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 8,
   },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#2E7D32', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#66BB6A', textAlign: 'center', lineHeight: 22 },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#1e40af', marginBottom: 8 },
+  subtitle: { fontSize: 16, color: '#60a5fa', textAlign: 'center', lineHeight: 22 },
   form: { marginBottom: 30 },
   registerButton: { marginTop: 24 },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-  footerText: { color: '#66BB6A', fontSize: 16 },
+  footerText: { color: '#60a5fa', fontSize: 16 },
   loginLinkText: { fontWeight: 'bold', fontSize: 16 },
 });
 
