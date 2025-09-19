@@ -195,26 +195,52 @@ const FeedScreen = ({ navigation }) => {
     }
   };
 
-  const addComment = async () => {
-    if (!commentText.trim()) return;
-    if (!selectedPost) return;
-    
-    try {
-      const response = await API.post(`/posts/${selectedPost}/comment`, { 
-        text: commentText.trim() 
-      });
-      
-      setCommentText("");
-      
-      // Refresh comments after adding a new one
-      const res = await API.get(`/posts/${selectedPost}`);
-      const comments = res.data.comments || [];
-      setCommentsList(comments);
-      
-    } catch (err) {
-      console.error("❌ Error adding comment:", err.message);
-    }
-  };
+ const addComment = async () => {
+  if (!commentText.trim() || !selectedPost) return;
+
+  try {
+    // 1st API call → Add comment
+    await API.post(`/posts/${selectedPost}/comment`, {
+      text: commentText.trim(),
+    });
+
+    // Clear input
+    setCommentText("");
+
+    // 🔥 Optimistic update (instant UI update)
+    setReports(prevReports =>
+      prevReports.map(report =>
+        String(report._id) === String(selectedPost) // ensure type match
+          ? { ...report, commentsCount: (report.commentsCount || 0) + 1 }
+          : report
+      )
+    );
+
+    // 2nd API call → Get latest data from backend
+    const res = await API.get(`/posts/${selectedPost}`);
+    const updatedPost = res.data;
+
+    // Update comments inside modal
+    setCommentsList(updatedPost.comments || []);
+
+    // Update feed again with backend-confirmed count
+    setReports(prevReports =>
+      prevReports.map(report =>
+        String(report._id) === String(selectedPost)
+          ? {
+              ...report,
+              commentsCount:
+                updatedPost.commentsCount || (updatedPost.comments?.length || 0),
+            }
+          : report
+      )
+    );
+  } catch (err) {
+    console.error("❌ Error adding comment:", err.message);
+  }
+};
+
+
 
   const openCommentModal = async (postId, title) => {
     if (!postId) return;
