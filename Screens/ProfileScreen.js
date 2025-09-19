@@ -23,7 +23,7 @@ import * as ImagePicker from 'expo-image-picker';
 const { width, height } = Dimensions.get('window');
 
 // API Configuration - use your actual API base URL
-const API_BASE_URL = 'https://8db3da1993c6.ngrok-free.app/api';
+const API_BASE_URL = 'https://16c1d075f31f.ngrok-free.app/api';
 
 // Move InputField outside the main component
 const InputField = React.memo(({ icon, iconFamily = 'Ionicons', placeholder, value, onChangeText, multiline = false, keyboardType = 'default', error, fieldName, inputRef, fadeAnim, slideAnim, isEditing }) => {
