@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Header from "../components/Header";
@@ -21,6 +23,12 @@ const MyReportsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [editingReport, setEditingReport] = useState(null);
   const [newDescription, setNewDescription] = useState("");
+  
+  // Review modal states
+  const [reviewModal, setReviewModal] = useState(false);
+  const [selectedReportForReview, setSelectedReportForReview] = useState(null);
+  const [reviewText, setReviewText] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const fetchReports = async () => {
     try {
@@ -52,7 +60,7 @@ const MyReportsScreen = ({ navigation }) => {
 
   const getMediaUrl = (path) => {
     if (!path) return null;
-    return `https://8db3da1993c6.ngrok-free.app/${path.replace("\\", "/")}`;
+    return `https://16c1d075f31f.ngrok-free.app/${path.replace("\\", "/")}`;
   };
 
   const handleEditPost = async () => {
@@ -78,6 +86,59 @@ const MyReportsScreen = ({ navigation }) => {
     }
   };
 
+  const handleSubmitReview = async () => {
+    if (!reviewText.trim() || !selectedReportForReview) return;
+
+    setSubmittingReview(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Unauthorized", "Please log in again");
+        return;
+      }
+
+      const res = await API.post(
+        `posts/${selectedReportForReview}/review`,
+        { reviewText: reviewText.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      Alert.alert("Success", "Review submitted successfully!");
+      
+      // Update the local state to mark this report as reviewed
+      setReports(prevReports =>
+        prevReports.map(report =>
+          report._id === selectedReportForReview
+            ? { ...report, hasUserReviewed: true }
+            : report
+        )
+      );
+
+      // Close modal and reset state
+      setReviewModal(false);
+      setReviewText("");
+      setSelectedReportForReview(null);
+
+    } catch (err) {
+      console.error("Submit review error:", err.response?.data || err.message);
+      Alert.alert("Error", err.response?.data?.msg || "Failed to submit review");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const openReviewModal = (reportId) => {
+    setSelectedReportForReview(reportId);
+    setReviewText("");
+    setReviewModal(true);
+  };
+
+  const closeReviewModal = () => {
+    setReviewModal(false);
+    setReviewText("");
+    setSelectedReportForReview(null);
+  };
+
   const canEdit = (createdAt) => {
     const diffMinutes =
       (new Date() - new Date(createdAt)) / 1000 / 60;
@@ -96,7 +157,7 @@ const MyReportsScreen = ({ navigation }) => {
         <ScrollView style={styles.content}>
           {reports.length === 0 ? (
             <Text style={styles.noReports}>
-              You haven’t created any reports yet
+              You haven't created any reports yet
             </Text>
           ) : (
             <View style={styles.reportsList}>
@@ -136,17 +197,40 @@ const MyReportsScreen = ({ navigation }) => {
                     </View>
                   </View>
 
-                  {canEdit(report.createdAt) && (
-                    <TouchableOpacity
-                      style={styles.editButton}
-                      onPress={() => {
-                        setEditingReport(report);
-                        setNewDescription(report.description);
-                      }}
-                    >
-                      <Text style={styles.editText}>✏️ Edit</Text>
-                    </TouchableOpacity>
-                  )}
+                  {/* Action Buttons Container */}
+                  <View style={styles.actionButtonsContainer}>
+                    {canEdit(report.createdAt) && (
+                      <TouchableOpacity
+                        style={styles.editButton}
+                        onPress={() => {
+                          setEditingReport(report);
+                          setNewDescription(report.description);
+                        }}
+                      >
+                        <Ionicons name="create" size={16} color="white" />
+                        <Text style={styles.editText}>Edit</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Review Button - Only show if user hasn't reviewed yet */}
+                    {!report.hasUserReviewed && (
+                      <TouchableOpacity
+                        style={styles.reviewButton}
+                        onPress={() => openReviewModal(report._id)}
+                      >
+                        <Ionicons name="star" size={16} color="white" />
+                        <Text style={styles.reviewText}>Review</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Show "Reviewed" indicator if already reviewed */}
+                    {report.hasUserReviewed && (
+                      <View style={styles.reviewedIndicator}>
+                        <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                        <Text style={styles.reviewedText}>Reviewed</Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
               ))}
             </View>
@@ -180,6 +264,70 @@ const MyReportsScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
+        </View>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal visible={reviewModal} animationType="slide" transparent={false}>
+        <View style={styles.reviewModalContainer}>
+          {/* Header */}
+          <View style={styles.reviewModalHeader}>
+            <TouchableOpacity 
+              onPress={closeReviewModal}
+              style={styles.backButton}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+            <Text style={styles.reviewModalTitle}>Write a Review</Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          {/* Review Content */}
+          <View style={styles.reviewContent}>
+            <View style={styles.reviewPromptContainer}>
+              <Ionicons name="star" size={48} color="#3B82F6" />
+              <Text style={styles.reviewPromptTitle}>Share Your Feedback</Text>
+              <Text style={styles.reviewPromptSubtext}>
+                Help us improve by sharing your experience with this report
+              </Text>
+            </View>
+
+            <View style={styles.reviewInputContainer}>
+              <TextInput
+                style={styles.reviewInput}
+                placeholder="Write your review here..."
+                placeholderTextColor="#9CA3AF"
+                value={reviewText}
+                onChangeText={setReviewText}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+          </View>
+
+          {/* Submit Button - Fixed at bottom */}
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.reviewSubmitContainer}
+          >
+            <TouchableOpacity 
+              onPress={handleSubmitReview}
+              disabled={!reviewText.trim() || submittingReview}
+              style={[
+                styles.submitButton,
+                (!reviewText.trim() || submittingReview) && styles.submitButtonDisabled
+              ]}
+            >
+              {submittingReview ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <>
+                  <Ionicons name="send" size={16} color="white" />
+                  <Text style={styles.submitButtonText}>Submit Review</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </View>
@@ -233,15 +381,61 @@ const styles = StyleSheet.create({
   locationContainer: { flexDirection: "row", alignItems: "center", gap: 4 },
   timeContainer: { flexDirection: "row", alignItems: "center", gap: 4 },
   footerText: { fontSize: 12, color: "#6B7280" },
+  
+  // Action buttons container
+  actionButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginTop: 12,
+    gap: 8,
+  },
   editButton: {
-    marginTop: 10,
-    alignSelf: "flex-end",
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#2563EB",
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
+    gap: 4,
   },
-  editText: { color: "white", fontSize: 12 },
+  editText: { 
+    color: "white", 
+    fontSize: 12, 
+    fontWeight: "600" 
+  },
+  reviewButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#3B82F6",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    gap: 4,
+  },
+  reviewText: { 
+    color: "white", 
+    fontSize: 12, 
+    fontWeight: "600" 
+  },
+  reviewedIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F4F6",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  reviewedText: { 
+    color: "#10B981", 
+    fontSize: 12, 
+    fontWeight: "600" 
+  },
+  
+  // Edit modal styles (existing)
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -281,6 +475,85 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   btnText: { color: "white", fontWeight: "600" },
+
+  // Review modal styles
+  reviewModalContainer: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  reviewModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  backButton: {
+    padding: 4,
+  },
+  reviewModalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1F2937",
+  },
+  reviewContent: {
+    flex: 1,
+    padding: 16,
+  },
+  reviewPromptContainer: {
+    alignItems: "center",
+    marginBottom: 32,
+    paddingTop: 32,
+  },
+  reviewPromptTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#1F2937",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  reviewPromptSubtext: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  reviewInputContainer: {
+    flex: 1,
+  },
+  reviewInput: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: "#1F2937",
+    minHeight: 120,
+    textAlignVertical: "top",
+  },
+  reviewSubmitContainer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+  },
+  submitButton: {
+    backgroundColor: "#3B82F6",
+    borderRadius: 12,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  submitButtonDisabled: {
+    backgroundColor: "#9CA3AF",
+  },
+  submitButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });
 
 export default MyReportsScreen;
