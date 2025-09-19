@@ -364,19 +364,19 @@ const FeedScreen = ({ navigation }) => {
                 </View>
 
                 <View style={styles.actionsContainer}>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => toggleLike(report._id)}
-                  >
-                    <Ionicons
-                      name={report.isLikedByUser ? "heart" : "heart-outline"}
-                      size={16}
-                      color={report.isLikedByUser ? "#EF4444" : "#6B7280"}
-                    />
-                    <Text style={styles.actionText}>
-                      {report.likesCount || 0}
-                    </Text>
-                  </TouchableOpacity>
+                 <TouchableOpacity
+  style={styles.actionButton}
+  onPress={() => toggleLike(report._id)}
+>
+  <Ionicons
+    name={report.isLikedByUser ? "chevron-up" : "chevron-up-outline"}
+    size={16}
+    color={report.isLikedByUser ? "#3B82F6" : "#6B7280"}
+  />
+  <Text style={styles.actionText}>
+    {report.likesCount || 0}
+  </Text>
+</TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.actionButton}

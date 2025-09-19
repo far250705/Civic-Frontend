@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,44 @@ const { width, height } = Dimensions.get('window');
 
 // API Configuration - use your actual API base URL
 const API_BASE_URL = 'https://civicapi.onrender.com/api';
+
+// Move InputField outside the main component
+const InputField = React.memo(({ icon, iconFamily = 'Ionicons', placeholder, value, onChangeText, multiline = false, keyboardType = 'default', error, fieldName, inputRef, fadeAnim, slideAnim, isEditing }) => {
+  return (
+    <Animated.View 
+      style={[
+        styles.inputContainer,
+        { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
+      ]}
+    >
+      <View style={styles.inputWrapper}>
+        <View style={styles.iconContainer}>
+          {iconFamily === 'MaterialCommunityIcons' ? (
+            <MaterialCommunityIcons name={icon} size={24} color="#2563eb" />
+          ) : (
+            <Ionicons name={icon} size={24} color="#2563eb" />
+          )}
+        </View>
+        <TextInput
+          ref={inputRef}
+          style={[
+            styles.input,
+            multiline && styles.multilineInput,
+            error && styles.inputError
+          ]}
+          placeholder={placeholder}
+          placeholderTextColor="#9ca3af"
+          value={value}
+          onChangeText={onChangeText}
+          editable={isEditing}
+          multiline={multiline}
+          keyboardType={keyboardType}
+        />
+      </View>
+      {error && <Text style={styles.errorText}>{error}</Text>}
+    </Animated.View>
+  );
+});
 
 const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
   const navigation = useNavigation();
@@ -56,6 +94,27 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
   const dobRef = useRef();
   const phoneRef = useRef();
   const bioRef = useRef();
+
+  // Create stable callback functions
+  const updateUsername = useCallback((text) => {
+    setTempProfile(prev => ({ ...prev, username: text }));
+  }, []);
+
+  const updateAge = useCallback((text) => {
+    setTempProfile(prev => ({ ...prev, age: text }));
+  }, []);
+
+  const updateDob = useCallback((text) => {
+    setTempProfile(prev => ({ ...prev, dob: text }));
+  }, []);
+
+  const updatePhone = useCallback((text) => {
+    setTempProfile(prev => ({ ...prev, phone: text }));
+  }, []);
+
+  const updateBio = useCallback((text) => {
+    setTempProfile(prev => ({ ...prev, bio: text }));
+  }, []);
 
   // API Functions
   const getAuthToken = async () => {
@@ -126,9 +185,8 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
         return false;
       }
 
-      // Use username instead of name - FIXED
       const updateData = {
-        username: tempProfile.username, // Changed from name to username
+        username: tempProfile.username,
         age: parseInt(tempProfile.age) || 0,
         dob: tempProfile.dob,
         phone: tempProfile.phone,
@@ -211,7 +269,6 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
 
   const handleSave = async () => {
     if (validateForm()) {
-      // Animate save button
       Animated.sequence([
         Animated.timing(scaleAnim, {
           toValue: 0.95,
@@ -251,14 +308,10 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Remove token
               await AsyncStorage.removeItem("token");
-
-              // Update app state
               if (setIsLoggedIn) {
                 setIsLoggedIn(false);
               }
-
               Alert.alert('Success', 'You have been logged out successfully.');
             } catch (error) {
               console.error('Logout error:', error);
@@ -271,7 +324,6 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
   };
 
   const pickImage = async () => {
-    // Request permissions
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Sorry, we need camera roll permissions to make this work!');
@@ -321,44 +373,6 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
     }
   };
 
-  // Optimized InputField component to prevent re-renders
-  const InputField = React.memo(({ icon, iconFamily = 'Ionicons', placeholder, value, onChangeText, multiline = false, keyboardType = 'default', error, fieldName, inputRef }) => {
-    return (
-      <Animated.View 
-        style={[
-          styles.inputContainer,
-          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-        ]}
-      >
-        <View style={styles.inputWrapper}>
-          <View style={styles.iconContainer}>
-            {iconFamily === 'MaterialCommunityIcons' ? (
-              <MaterialCommunityIcons name={icon} size={24} color="#2563eb" />
-            ) : (
-              <Ionicons name={icon} size={24} color="#2563eb" />
-            )}
-          </View>
-          <TextInput
-            ref={inputRef}
-            style={[
-              styles.input,
-              multiline && styles.multilineInput,
-              error && styles.inputError
-            ]}
-            placeholder={placeholder}
-            placeholderTextColor="#9ca3af"
-            value={value}
-            onChangeText={onChangeText}
-            editable={isEditing}
-            multiline={multiline}
-            keyboardType={keyboardType}
-          />
-        </View>
-        {error && <Text style={styles.errorText}>{error}</Text>}
-      </Animated.View>
-    );
-  });
-
   // Loading screen
   if (loading) {
     return (
@@ -374,7 +388,6 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      {/* Header */}
       <Animated.View 
         style={[
           styles.header,
@@ -402,7 +415,6 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Profile Picture */}
         <Animated.View 
           style={[
             styles.profilePictureContainer,
@@ -427,61 +439,74 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Form Fields */}
         <View style={styles.formContainer}>
           <InputField
             icon="person-outline"
             placeholder="Username"
             value={tempProfile.username}
-            onChangeText={(text) => setTempProfile(prev => ({...prev, username: text}))}
+            onChangeText={updateUsername}
             error={errors.username}
             fieldName="username"
             inputRef={usernameRef}
+            fadeAnim={fadeAnim}
+            slideAnim={slideAnim}
+            isEditing={isEditing}
           />
 
           <InputField
             icon="calendar-outline"
             placeholder="Age"
             value={tempProfile.age}
-            onChangeText={(text) => setTempProfile(prev => ({...prev, age: text}))}
+            onChangeText={updateAge}
             keyboardType="numeric"
             error={errors.age}
             fieldName="age"
             inputRef={ageRef}
+            fadeAnim={fadeAnim}
+            slideAnim={slideAnim}
+            isEditing={isEditing}
           />
 
           <InputField
             icon="gift-outline"
             placeholder="Date of Birth (YYYY-MM-DD)"
             value={tempProfile.dob}
-            onChangeText={(text) => setTempProfile(prev => ({...prev, dob: text}))}
+            onChangeText={updateDob}
             fieldName="dob"
             inputRef={dobRef}
+            fadeAnim={fadeAnim}
+            slideAnim={slideAnim}
+            isEditing={isEditing}
           />
 
           <InputField
             icon="call-outline"
             placeholder="Phone Number"
             value={tempProfile.phone}
-            onChangeText={(text) => setTempProfile(prev => ({...prev, phone: text}))}
+            onChangeText={updatePhone}
             keyboardType="phone-pad"
             error={errors.phone}
             fieldName="phone"
             inputRef={phoneRef}
+            fadeAnim={fadeAnim}
+            slideAnim={slideAnim}
+            isEditing={isEditing}
           />
 
           <InputField
             icon="information-circle-outline"
             placeholder="Bio"
             value={tempProfile.bio}
-            onChangeText={(text) => setTempProfile(prev => ({...prev, bio: text}))}
+            onChangeText={updateBio}
             multiline={true}
             fieldName="bio"
             inputRef={bioRef}
+            fadeAnim={fadeAnim}
+            slideAnim={slideAnim}
+            isEditing={isEditing}
           />
         </View>
 
-        {/* Action Buttons */}
         {isEditing && (
           <Animated.View 
             style={[
@@ -514,7 +539,6 @@ const ProfileScreen = ({ setIsLoggedIn, setActiveScreen }) => {
           </Animated.View>
         )}
 
-        {/* Logout Button */}
         <Animated.View 
           style={[
             styles.logoutContainer,
