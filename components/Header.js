@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Bell, User } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const Header = ({ title, showBack = false, onBack }) => {
+const Header = ({ title }) => {
   const navigation = useNavigation();
 
   // Navigate to ProfileScreen when profile icon is pressed
@@ -14,14 +14,7 @@ const Header = ({ title, showBack = false, onBack }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.left}>
-        {showBack && onBack && (
-          <TouchableOpacity style={styles.backButton} onPress={onBack}>
-            <Text style={styles.backText}>←</Text>
-          </TouchableOpacity>
-        )}
-        <Text style={styles.title}>{title}</Text>
-      </View>
+      <Text style={styles.title}>{title}</Text>
 
       <View style={styles.right}>
         <Bell size={24} color="white" />
@@ -45,18 +38,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-  },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButton: {
-    marginRight: 8,
-    padding: 4,
-  },
-  backText: {
-    color: 'white',
-    fontSize: 18,
   },
   title: {
     color: 'white',
