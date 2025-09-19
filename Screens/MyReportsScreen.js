@@ -52,7 +52,7 @@ const MyReportsScreen = ({ navigation }) => {
 
   const getMediaUrl = (path) => {
     if (!path) return null;
-    return `https://civicapi.onrender.com/${path.replace("\\", "/")}`;
+    return `https://8db3da1993c6.ngrok-free.app/${path.replace("\\", "/")}`;
   };
 
   const handleEditPost = async () => {
